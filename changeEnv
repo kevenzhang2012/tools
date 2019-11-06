@@ -1,0 +1,55 @@
+
+<?php 
+//读取
+// 得到数据库变量
+//如果更换就替换
+
+//$contentOld = 'aaa ###DB_DATABASE=aaaaa_test';
+//$contentNew = preg_replace('/#{0,5}DB_DATABASE=aaaaa_test/', 'DB_DATABASE=aaaaa_test', $contentOld);
+//echo $contentNew;
+//exit;
+$fileName = '.env';
+
+
+if(isset($_GET['s']) && $_GET['s']=='TRSa3XSiZV') {
+
+
+
+  if(isset($_GET['change'])   ) {
+     $change  = intval($_GET['change']);
+      $contentOld = file_get_contents('.env');
+      if($change == 1) {
+
+          $contentNew = preg_replace('/DB_DATABASE=aaaaa_test/', '#DB_DATABASE=aaaaa_test', $contentOld);
+          $contentNew = preg_replace('/#{0,5}DB_DATABASE=aaaaa_report_test/', 'DB_DATABASE=aaaaa_report_test', $contentNew);
+
+      }
+      if($change == 2) {
+
+          $contentNew = preg_replace('/#{0,5}DB_DATABASE=aaaaa_test/', 'DB_DATABASE=aaaaa_test', $contentOld);
+          $contentNew = preg_replace('/DB_DATABASE=aaaaa_report_test/', '#DB_DATABASE=aaaaa_report_test', $contentNew);
+
+      }
+      echo $contentNew;
+      file_put_contents($fileName, $contentNew);
+  }
+
+
+
+
+   $content = file_get_contents($fileName);
+   if (strpos($content, 'DB_DATABASE=aaaaa_test') && !strpos($content, '#DB_DATABASE=aaaaa_test')) {
+      echo '链接了test库<br>';
+      echo '<p>';
+      echo '<a href="?change=1&s=TRSa3XSiZV">替换为报表库</a>';
+
+
+   }
+   if (strpos($content, 'DB_DATABASE=aaaaa_report_test') && !strpos($content, '#DB_DATABASE=aaaaa_report_test')) {
+      echo '链接了报表库<br>';
+      echo '<p>';
+      echo '<a href="?change=2&s=TRSa3XSiZV">替换为测试库</a>';
+   }
+
+
+}
