@@ -1,0 +1,91 @@
+
+
+
+ /***
+     * 导出结构
+     */
+    public function exportDb(Request $request)
+    {
+
+        $sql = 'show tables;';
+        $res_tableList = DB::select($sql);
+        $j = 1;
+    foreach ($res_tableList as $tk=>$tv) {
+        if($j>20) {
+          //  break;
+        }
+        $j++;
+        $tableName = $tv->_test;
+        $sql = "
+
+SELECT
+--     TABLE_NAME 表名,
+    COLUMN_NAME as cname,
+    COLUMN_TYPE as ctypeall,
+    DATA_TYPE as ctype,
+    COLUMN_TYPE as cotype,
+    CHARACTER_MAXIMUM_LENGTH as clen,
+--    IS_NULLABLE 是否为空,
+--   COLUMN_DEFAULT 默认值,
+    COLUMN_COMMENT as mark
+FROM
+    INFORMATION_SCHEMA.COLUMNS
+WHERE
+-- test_database为数据库名称，到时候只需要修改成你要导出表结构的数据库即可
+table_schema ='test'
+AND
+-- test_table为表名，到时候换成你要导出的表的名称
+-- 如果不写的话，默认会查询出所有表中的数据
+table_name  = '{$tableName}'";
+        $res = DB::select($sql);
+        //dd($res);
+
+        $i = 1;
+        $res_table[$tableName] = [0 => ['序号', '列名', '字段类型', '长度范围', '约束', '备注']];
+        $column_array=['varchar' => '字符', 'int' => '数字', 'decimal' => '数字', 'timestamp' => '时间', 'tinyint'=>'字符', 'tinyint'=>'数字', 'text'=>'字符', 'char'=>'字符', 'tinytext'=>'字符'];
+        foreach ($res as $k => $v) {
+            $cotype = $v->cotype; //原始类型
+      //      echo '<pre>';
+     //       print_r($v);
+            if(isset($column_array[$v->ctype])) {
+               $ctype =  $column_array[$v->ctype];
+            }else{
+                $ctype =  '未知';
+            }
+
+            if (in_array($v->ctype, ['int','tinyint','timestamp'])) {
+
+                //$clen ='aaaa';// str_replace(['(',')','int'], '', $cotype);
+                $clen =11;// str_replace(['(',')','int'], '', $cotype);
+            }else {
+
+                $clen = $v->clen??0;
+            }
+            if ($v->cname == 'id') {
+                $v->mark = '自增id';
+
+             //   continue;
+            }
+            $res_table[$tableName][$i] = [$i, $v->cname, $ctype, $clen, '', $v->mark];
+
+            $i++;
+        }
+
+    }
+        //echo '<pre>';
+        //var_dump($res_table);
+        //dd(1);
+
+        Excel::create('测试导出', function($excel) use ($res_table){
+            foreach($res_table as $tableName=>$value) {
+
+                $excel->sheet($tableName, function ($sheet) use ($value) {
+                    $sheet->rows($value);
+                });
+            }
+
+        })->export('xls');
+
+      //
+
+    }
